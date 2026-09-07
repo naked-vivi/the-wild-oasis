@@ -21,7 +21,7 @@ export async function createCabin(newCabin, id?: number) {
         ? newCabin.image
         : `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`
 
-    //2. upload image
+    //1. upload image
     // if (hasImagePath) return data;
     const { error: storageError } = await supabase.storage
         .from("cabin-images")
@@ -33,7 +33,7 @@ export async function createCabin(newCabin, id?: number) {
         throw new Error("Cabin image could not be uploaded");
     }
 
-    //1. create cabin
+    //2. create cabin
     const query = id
         ? supabase.from("cabins").update({ ...newCabin, image: imagePath }).eq("id", id)
         : supabase.from("cabins").insert({ ...newCabin, image: imagePath });
