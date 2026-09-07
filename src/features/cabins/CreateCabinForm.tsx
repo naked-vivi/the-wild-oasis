@@ -13,10 +13,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { createCabin } from "@/services/apiCabins"
-import { data } from "react-router-dom"
-import { toast } from "@/components/ui/toast"
+import useCreateCabin from "./useCreateCabin"
 
 const cabinSchema = z
   .object({
@@ -34,39 +31,50 @@ const cabinSchema = z
 
 type CabinFormValues = z.infer<typeof cabinSchema>
 
-export default function CreateCabinForm() {
+type CreateCabinFormProps = {
+  cabinToEdit?: CabinFormValues & { id?: number },
+  onClose?: () => void
+}
 
-  const queryClient = useQueryClient();
+export default function CreateCabinForm({ cabinToEdit = {}, onClose }: CreateCabinFormProps) {
+  console.log(cabinToEdit)
+  const { id: editId, ...editValues } = cabinToEdit;
 
-  const { mutate, isPending: isCreating } = useMutation({
-    mutationFn: createCabin,
-    onSuccess: () => {
-      toast.add({
-        type: "success",
-        description: "New cabin successfully created!",
-      });
-      console.log(data)
-
-      queryClient.invalidateQueries({ queryKey: ['cabins'] });
-
+  const { createCabinMutate, isCreating, isEditSession } = useCreateCabin({
+    editId,
+    onSuccessCallback: () => {
       form.reset();
+      onClose?.();
     },
   });
 
-  const form = useForm<CabinFormValues>({
-    resolver: zodResolver(cabinSchema),
-    defaultValues: {
+  const sanitizedValues = isEditSession
+    ? {
+      name: editValues.name ?? "",
+      maxCapacity: editValues.maxCapacity ?? 1,
+      regularPrice: editValues.regularPrice ?? 0,
+      discount: editValues.discount ?? 0,
+      description: editValues.description ?? "",
+      image: editValues.image ?? "",
+    }
+    : {
       name: "",
       maxCapacity: 1,
       regularPrice: 0,
       discount: 0,
       description: "",
-    },
-  })
+      image: "",
+    };
+
+  const form = useForm<CabinFormValues>({
+    resolver: zodResolver(cabinSchema),
+    values: sanitizedValues,
+  });
+
 
   function onSubmit(data: CabinFormValues) {
     // mutate({ ...data, image: data.image[0] })
-    mutate(data);
+    createCabinMutate(data);
   }
 
   return (
@@ -178,7 +186,7 @@ export default function CreateCabinForm() {
             <Controller
               name="image"
               control={form.control}
-              render={({ field: { onChange, ...fieldProps }, fieldState }) => (
+              render={({ field: { value, onChange, ...fieldProps }, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="image">Cabin photo</FieldLabel>
                   <Input
@@ -200,11 +208,11 @@ export default function CreateCabinForm() {
               <Button
                 type="reset"
                 variant="outline"
-              // onClick={() => form.reset()}
+                onClick={() => onClose?.()}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isCreating}>Add cabin</Button>
+              <Button type="submit" disabled={isCreating}>{isEditSession ? "Update cabin" : "Add cabin"}</Button>
             </div>
           </FieldGroup>
         </form>
