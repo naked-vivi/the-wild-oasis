@@ -1,10 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
-
 import * as z from "zod"
-
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Field,
   FieldError,
@@ -78,11 +75,6 @@ export default function CreateCabinForm({ cabinToEdit = {}, onClose }: CreateCab
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Create Cabin</CardTitle>
-      </CardHeader>
-      <CardContent>
         <form id="cabin-form" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup className="space-y-4">
             <Controller
@@ -206,17 +198,16 @@ export default function CreateCabinForm({ cabinToEdit = {}, onClose }: CreateCab
 
             <div className="flex justify-end gap-3 pt-4">
               <Button
-                type="reset"
+                type="button"
                 variant="outline"
                 onClick={() => onClose?.()}
               >
                 Cancel
               </Button>
+              
               <Button type="submit" disabled={isCreating}>{isEditSession ? "Update cabin" : "Add cabin"}</Button>
             </div>
           </FieldGroup>
         </form>
-      </CardContent>
-    </Card>
   )
 }

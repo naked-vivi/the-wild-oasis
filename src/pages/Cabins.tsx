@@ -1,13 +1,8 @@
-import { Button } from "@/components/ui/button";
+import AddCabin from "@/features/cabins/AddCabin";
 import CabinTable from "@/features/cabins/CabinTable";
-import CreateCabinForm from "@/features/cabins/CreateCabinForm";
-
-import { useState } from "react";
-
-
 
 function Cabins() {
-  const [showForm, setShowForm] = useState(false);
+
 
   return (
     <div>
@@ -20,11 +15,7 @@ function Cabins() {
       </div>
       <CabinTable />
 
-      <div className="flex items-center justify-end my-6">
-        <Button className="bg-blue-600 w-full h-12" onClick={() => setShowForm(show => !show)}>Add new cabin</Button>
-      </div>
-
-      {showForm && <CreateCabinForm />}
+      <AddCabin />
     </div>
   );
 }
