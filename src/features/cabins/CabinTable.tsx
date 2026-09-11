@@ -20,6 +20,7 @@ import { useState } from "react"
 import useCabins from "./useCabins"
 import useCreateCabin from "./useCreateCabin"
 import CabinFormModal from "./CabinFormModal"
+import { useSearchParams } from "react-router-dom"
 
 interface Cabin {
   id: number
@@ -37,6 +38,17 @@ export default function CabinTable() {
 
   const { isCreating, createCabinMutate } = useCreateCabin()
   const { isPending, cabins } = useCabins()
+
+  const [searchParams] = useSearchParams(); // or useSearchParams() from 'next/navigation'
+  const filterValue = searchParams.get("discount") || "all";
+
+  // Filter logic
+  let filteredCabins = cabins;
+  if (filterValue === "no-discount") {
+    filteredCabins = cabins.filter((cabin) => cabin.discount === 0);
+  } else if (filterValue === "with-discount") {
+    filteredCabins = cabins.filter((cabin) => cabin.discount > 0);
+  }
 
   function handleDuplicate(cabin: Cabin) {
     const { name, maxCapacity, regularPrice, discount, image, description } = cabin
@@ -66,7 +78,7 @@ export default function CabinTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {cabins?.map((cabin) => (
+          {filteredCabins?.map((cabin) => (
             <TableRow key={cabin.id}>
               <TableCell className="py-6">
                 <img

@@ -1,5 +1,6 @@
 import AddCabin from "@/features/cabins/AddCabin";
 import CabinTable from "@/features/cabins/CabinTable";
+import Filter from "@/shared/filter";
 
 function Cabins() {
 
@@ -10,7 +11,7 @@ function Cabins() {
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           All cabins
         </h1>
-        <p className="text-lg text-muted-foreground">Filter / Sort</p>
+        <Filter />
 
       </div>
       <CabinTable />
