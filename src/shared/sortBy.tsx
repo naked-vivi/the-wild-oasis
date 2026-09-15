@@ -22,6 +22,8 @@ export default function SortBy({ options }: SortByProps) {
     // Get current sort value or fallback to the first option
     const currentSort = searchParams.get("sortBy") || options[0]?.value || "";
 
+    const selectedOption = options.find((opt) => opt.value === currentSort);
+
     function handleChange(value: string) {
         searchParams.set("sortBy", value)
         setSearchParams(searchParams);
@@ -30,7 +32,9 @@ export default function SortBy({ options }: SortByProps) {
     return (
         <Select value={currentSort} onValueChange={handleChange}>
             <SelectTrigger className="w-50">
-                <SelectValue placeholder="Sort by..." />
+                <SelectValue placeholder="Sort by...">
+                    {selectedOption?.label}
+                </SelectValue>
             </SelectTrigger>
             <SelectContent>
                 {options.map((option) => (

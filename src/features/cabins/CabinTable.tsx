@@ -38,17 +38,38 @@ export default function CabinTable() {
 
   const { isCreating, createCabinMutate } = useCreateCabin()
   const { isPending, cabins } = useCabins()
+  const [searchParams] = useSearchParams()
 
-  const [searchParams] = useSearchParams(); // or useSearchParams() from 'next/navigation'
-  const filterValue = searchParams.get("discount") || "all";
+  // 1. Return early BEFORE doing array operations on 'cabins'
+  if (isPending) return <Spinner />
 
-  // Filter logic
-  let filteredCabins = cabins;
+  // Ensure cabins is always an array
+  const cabinList = cabins || []
+
+  // 2. FILTER LOGIC
+  const filterValue = searchParams.get("discount") || "all"
+  let filteredCabins = cabinList
+
   if (filterValue === "no-discount") {
-    filteredCabins = cabins.filter((cabin) => cabin.discount === 0);
+    filteredCabins = cabinList.filter((cabin) => cabin.discount === 0)
   } else if (filterValue === "with-discount") {
-    filteredCabins = cabins.filter((cabin) => cabin.discount > 0);
+    filteredCabins = cabinList.filter((cabin) => cabin.discount > 0)
   }
+
+  // 3. SORT LOGIC
+  const sortBy = searchParams.get("sortBy") || "name-asc"
+  const [field, direction] = sortBy.split("-")
+  const modifier = direction === "asc" ? 1 : -1
+
+  const sortedCabins = [...filteredCabins].sort((a, b) => {
+    const aVal = a[field as keyof Cabin]
+    const bVal = b[field as keyof Cabin]
+
+    if (typeof aVal === "string" && typeof bVal === "string") {
+      return aVal.localeCompare(bVal) * modifier
+    }
+    return ((aVal as number) - (bVal as number)) * modifier
+  })
 
   function handleDuplicate(cabin: Cabin) {
     const { name, maxCapacity, regularPrice, discount, image, description } = cabin
@@ -78,7 +99,7 @@ export default function CabinTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredCabins?.map((cabin) => (
+          {sortedCabins.map((cabin) => (
             <TableRow key={cabin.id}>
               <TableCell className="py-6">
                 <img
@@ -113,13 +134,11 @@ export default function CabinTable() {
                       <span>Duplicate</span>
                     </DropdownMenuItem>
 
-                    {/* Pure state change - No DialogTrigger wrapper needed */}
                     <DropdownMenuItem onClick={() => setEditingCabin(cabin)}>
                       <Edit className="mr-2 h-4 w-4" />
                       <span>Edit</span>
                     </DropdownMenuItem>
 
-                    {/* Pure state change - No AlertDialogTrigger wrapper needed */}
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive cursor-pointer"
                       onClick={() => setDeletingCabin(cabin)}
