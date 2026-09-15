@@ -68,14 +68,9 @@ export default function BookingTable() {
                   <TableCell>
                     <div className="flex flex-col">
                       <span className="font-medium">{booking.guests?.fullName || booking.guestName}</span>
-                      <div className="flex flex-col">
-                        <span className="text-sm text-bold">
-                          {booking.guests?.fullname || booking.guestName}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {booking.guests?.email || booking.guestEmail}
-                        </span>
-                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {booking.guests?.email || booking.guestEmail}
+                      </span>
                     </div>
                   </TableCell>
 

@@ -8,6 +8,7 @@ import {
     SidebarHeader,
 } from "@/components/ui/sidebar"
 import { Collapsible } from "@/components/ui/collapsible"
+import Uploader from "@/data/Uploader"
 
 export function AppSidebar() {
     return (
@@ -24,7 +25,9 @@ export function AppSidebar() {
                 </Collapsible>
             </SidebarContent>
 
-            <SidebarFooter />
+            <SidebarFooter>
+                <Uploader />
+            </SidebarFooter>
         </Sidebar>
     )
 }
