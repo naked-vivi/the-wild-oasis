@@ -1,31 +1,135 @@
-import BookingRow from "./BookingRow";
-import Table from "../../ui/Table";
-import Menus from "../../ui/Menus";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import Spinner from "@/shared/Spinner";
+import useBookings from "./useBookings";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal, Eye, Trash2 } from "lucide-react";
 
-function BookingTable() {
-  const bookings = [];
+export default function BookingTable() {
+  const { bookings, isPending } = useBookings(); // Replace with hook or state, e.g., useBookings()
+
+  if (isPending) {
+    return <Spinner />;
+  }
+
+  // if (bookings.length === 0) {
+  //   return (
+  //     <div className="h-24 flex items-center justify-center text-muted-foreground">
+  //       No bookings found.
+  //     </div>
+  //   );
+  // }
 
   return (
-    <Menus>
-      <Table columns="0.6fr 2fr 2.4fr 1.4fr 1fr 3.2rem">
-        <Table.Header>
-          <div>Cabin</div>
-          <div>Guest</div>
-          <div>Dates</div>
-          <div>Status</div>
-          <div>Amount</div>
-          <div></div>
-        </Table.Header>
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader className="bg-muted/50">
+          <TableRow>
+            <TableHead className="w-30">Cabin</TableHead>
+            <TableHead>Guest</TableHead>
+            <TableHead>Dates</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+            <TableHead className="w-12.5"></TableHead>
+          </TableRow>
+        </TableHeader>
 
-        <Table.Body
-          data={bookings}
-          render={(booking) => (
-            <BookingRow key={booking.id} booking={booking} />
+        <TableBody>
+          {bookings.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                No bookings found.
+              </TableCell>
+            </TableRow>
+          ) : (
+            bookings.map((booking) => {
+              // Status badge styling helper
+              const statusStyles: Record<string, string> = {
+                unconfirmed: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
+                "checked-in": "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+                "checked-out": "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+              };
+
+              return (
+                <TableRow key={booking.id} className="hover:bg-muted/50 transition-colors">
+                  {/* Cabin Name */}
+                  <TableCell className="font-semibold text-foreground">
+                    {booking.cabins?.name || booking.cabinName}
+                  </TableCell>
+
+                  {/* Guest Info */}
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{booking.guests?.fullName || booking.guestName}</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm text-bold">
+                          {booking.guests?.fullname || booking.guestName}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {booking.guests?.email || booking.guestEmail}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+
+                  {/* Stay Dates */}
+                  <TableCell className="text-sm">
+                    <div className="font-medium">
+                      {booking.startDate} &mdash; {booking.endDate}
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {booking.numNights} night stay
+                    </span>
+                  </TableCell>
+
+                  {/* Status Badge */}
+                  <TableCell>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${statusStyles[booking.status] || "bg-secondary text-secondary-foreground"
+                        }`}
+                    >
+                      {booking.status?.replace("-", " ")}
+                    </span>
+                  </TableCell>
+
+                  {/* Amount */}
+                  <TableCell className="text-right font-medium text-foreground">
+                    ${booking.totalPrice}
+                  </TableCell>
+
+                  {/* Action Menu */}
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        }
+                      />
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem className="cursor-pointer">
+                          <Eye className="mr-2 h-4 w-4" /> View details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              );
+            })
           )}
-        />
+        </TableBody>
       </Table>
-    </Menus>
+    </div >
   );
 }
-
-export default BookingTable;

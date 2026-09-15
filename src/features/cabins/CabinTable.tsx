@@ -98,6 +98,7 @@ export default function CabinTable() {
             <TableHead className="text-end">Action</TableHead>
           </TableRow>
         </TableHeader>
+
         <TableBody>
           {sortedCabins.map((cabin) => (
             <TableRow key={cabin.id}>
@@ -152,6 +153,7 @@ export default function CabinTable() {
             </TableRow>
           ))}
         </TableBody>
+        
       </Table>
 
       <CabinFormModal
