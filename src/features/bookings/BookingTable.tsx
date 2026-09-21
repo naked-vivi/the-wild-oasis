@@ -2,30 +2,27 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { BOOKINGS_PAGE_SIZE } from "@/services/apiBookings";
 import Spinner from "@/shared/Spinner";
 import useBookings from "./useBookings";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Eye, Trash2 } from "lucide-react";
+import { PaginationPage } from "@/shared/pagination-page";
 
 export default function BookingTable() {
-  const { bookings, isPending } = useBookings(); // Replace with hook or state, e.g., useBookings()
+  const { bookings, isPending, error, count, page } = useBookings();
 
   if (isPending) {
     return <Spinner />;
   }
 
-  // if (bookings.length === 0) {
-  //   return (
-  //     <div className="h-24 flex items-center justify-center text-muted-foreground">
-  //       No bookings found.
-  //     </div>
-  //   );
-  // }
+  if (error) return <p role="alert">{error.message}</p>;
 
   return (
     <div className="rounded-md border">
@@ -124,6 +121,13 @@ export default function BookingTable() {
             })
           )}
         </TableBody>
+        <TableFooter className="bg-muted/50">
+          <TableRow>
+            <TableCell colSpan={6}>
+              <PaginationPage count={count} page={page} pageSize={BOOKINGS_PAGE_SIZE} />
+            </TableCell>
+          </TableRow>
+        </TableFooter>
       </Table>
     </div >
   );

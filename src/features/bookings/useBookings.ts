@@ -18,15 +18,18 @@ export default function useBookings() {
     const [field, direction] = sortByRaw.split("-");
     const sortBy: SortOption = { field, direction };
 
+    const pageValue = Number(searchParams.get("page") || 1);
+    const page = Number.isSafeInteger(pageValue) && pageValue > 0 ? pageValue : 1;
+
     // 3. Query
     const {
         isPending,
         error,
-        data: bookings = [],
+        data,
     } = useQuery({
-        queryKey: ["bookings", filter, sortBy],
-        queryFn: () => getBookings({ filter, sortBy }),
+        queryKey: ["bookings", filter, sortBy, page],
+        queryFn: () => getBookings({ filter, sortBy, page }),
     });
 
-    return { isPending, error, bookings };
+    return { isPending, error, bookings: data?.bookings ?? [], count: data?.count ?? 0, page };
 }

@@ -25,7 +25,8 @@ export default function SortBy({ options }: SortByProps) {
     const selectedOption = options.find((opt) => opt.value === currentSort);
 
     function handleChange(value: string) {
-        searchParams.set("sortBy", value)
+        searchParams.set("sortBy", value);
+        if (searchParams.has("page")) searchParams.set("page", "1");
         setSearchParams(searchParams);
     }
 

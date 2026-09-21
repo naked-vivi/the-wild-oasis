@@ -11,16 +11,19 @@ export interface SortOption {
   direction: string;
 }
 
+export const BOOKINGS_PAGE_SIZE = 10;
+
 interface GetBookingsArgs {
   filter: FilterOption | null;
   sortBy: SortOption | null;
+  page: number;
 }
 
-export async function getBookings({ filter, sortBy }: GetBookingsArgs) {
+export async function getBookings({ filter, sortBy, page }: GetBookingsArgs) {
   // Explicitly type query to prevent Supabase's recursive generic explosion
   let query = supabase
     .from("bookings")
-    .select("*, cabins(name), guests(fullName, email)");
+    .select("*, cabins(name), guests(fullName, email)", { count: "exact" });
     
 
   // 1. Server-side Filter
@@ -35,14 +38,17 @@ export async function getBookings({ filter, sortBy }: GetBookingsArgs) {
     });
   }
 
-  const { data, error } = await query;
+  // Break sorting ties so records stay on consistent pages.
+  query = query.order("id");
+  const from = (page - 1) * BOOKINGS_PAGE_SIZE;
+  const { data, error, count } = await query.range(from, from + BOOKINGS_PAGE_SIZE - 1);
 
   if (error) {
     console.error(error);
     throw new Error("Bookings could not be loaded");
   }
 
-  return data;
+  return { bookings: data ?? [], count: count ?? 0 };
 }
 
 export async function getBooking(id) {
