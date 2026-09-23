@@ -24,7 +24,6 @@ export async function getBookings({ filter, sortBy, page }: GetBookingsArgs) {
   let query = supabase
     .from("bookings")
     .select("*, cabins(name), guests(fullName, email)", { count: "exact" });
-    
 
   // 1. Server-side Filter
   if (filter) {

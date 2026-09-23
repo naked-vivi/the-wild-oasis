@@ -20,7 +20,14 @@ function Cabins() {
           All cabins
         </h1>
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <Filter />
+          <Filter
+            filterField="discount"
+            options={[
+              { value: "all", label: "All" },
+              { value: "with-discount", label: "With discount" },
+              { value: "no-discount", label: "No discount" },
+            ]}
+          />
           <SortBy options={sortOptions} />
         </div>
       </div>

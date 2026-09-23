@@ -14,6 +14,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Eye, Trash2 } from "lucide-react";
 import { PaginationPage } from "@/shared/pagination-page";
+import { Link } from "react-router-dom";
 
 export default function BookingTable() {
   const { bookings, isPending, error, count, page } = useBookings();
@@ -108,7 +109,9 @@ export default function BookingTable() {
                       />
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem className="cursor-pointer">
-                          <Eye className="mr-2 h-4 w-4" /> View details
+                          <Link to={`/bookings/${booking.id}`} className="flex items-center">
+                            <Eye className="mr-2 h-4 w-4" /> View details
+                          </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer">
                           <Trash2 className="mr-2 h-4 w-4" /> Delete

@@ -1,13 +1,14 @@
 import BookingTable from "@/features/bookings/BookingTable";
-import SortBy from "@/shared/sortBy";
-import Filter from "@/shared/filter";
+import BookingTableOperations from "@/features/bookings/BookingTableOperations";
+// import SortBy from "@/shared/sortBy";
+// import Filter from "@/shared/filter";
 
-const sortOptions = [
-  { value: "startDate-desc", label: "Sort by date (recent first)" },
-  { value: "startDate-asc", label: "Sort by date (earlier first)" },
-  { value: "totalPrice-desc", label: "Sort by amount (high first)" },
-  { value: "totalPrice-asc", label: "Sort by amount (low first)" },
-];
+// const sortOptions = [
+//   { value: "startDate-desc", label: "Sort by date (recent first)" },
+//   { value: "startDate-asc", label: "Sort by date (earlier first)" },
+//   { value: "totalPrice-desc", label: "Sort by amount (high first)" },
+//   { value: "totalPrice-asc", label: "Sort by amount (low first)" },
+// ];
 
 function Bookings() {
   return (
@@ -16,7 +17,8 @@ function Bookings() {
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           All bookings
         </h1>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <BookingTableOperations />
+        {/* <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <Filter
             filterField="status"
             options={[
@@ -27,7 +29,7 @@ function Bookings() {
             ]}
           />
           <SortBy options={sortOptions} />
-        </div>
+        </div> */}
       </div>
       <BookingTable />
     </>
