@@ -3,12 +3,22 @@ import { updateBooking } from "@/services/apiBookings";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 
+interface CheckinArgs {
+    bookingId: number;
+    breakfast?: {
+        hasBreakfast: boolean;
+        extrasPrice: number;
+        totalPrice: number;
+    };
+}
+
 export function useCheckin() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
     const { mutate: checkIn, isPending: isCheckingIn } = useMutation({
-        mutationFn: (id: number) => updateBooking(id, { status: "checked-in", isPaid: true }),
+        mutationFn: ({ bookingId, breakfast }: CheckinArgs) =>
+            updateBooking(bookingId, { ...breakfast, status: "checked-in", isPaid: true }),
         onSuccess: (updatedBooking) => {
             navigate(`/bookings/${updatedBooking.id}`, { replace: true });
             queryClient.invalidateQueries({ queryKey: ["booking"] });
