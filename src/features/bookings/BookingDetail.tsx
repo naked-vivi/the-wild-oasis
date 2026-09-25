@@ -3,7 +3,11 @@ import Spinner from "@/shared/Spinner";
 import useBooking from "./useBooking";
 import { Button } from "@/components/ui/button";
 import { useMoveBack } from "../../hooks/useMoveBack";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useCheckout } from "../check-in-out/useCheckout";
+import { useDeleteBooking } from "./useDeleteBooking";
+import ConfirmDelete from "@/shared/confirmDelete";
+import { useState } from "react";
 
 // Map booking status to badge colors.
 const statusToBadgeStyle: Record<string, string> = {
@@ -13,9 +17,13 @@ const statusToBadgeStyle: Record<string, string> = {
 };
 
 function BookingDetail() {
+  const [deletingBookingId, setDeletingBookingId] = useState<number | null>(null);
   const { booking, isPending, error } = useBooking();
+  const { checkOut, isCheckingOut } = useCheckout();
+  const { deleteBooking, isDeletingBooking } = useDeleteBooking();
 
   const moveBack = useMoveBack();
+  const navigate = useNavigate();
 
   if (isPending) return <Spinner />;
 
@@ -53,15 +61,43 @@ function BookingDetail() {
 
       {/* Action Buttons */}
       <div className="flex items-center justify-end gap-3">
-        <Button variant="secondary" onClick={moveBack}>
-          Back
-        </Button>
         {booking.status === "unconfirmed" && (
           <Button className="cursor-pointer" render={<Link to={`/checkin/${booking.id}`} />} nativeButton={false}>
             Check-in
           </Button>
         )}
+        {booking.status === "checked-in" && (
+          <Button className="cursor-pointer"
+            onClick={() => checkOut(booking.id)}
+            disabled={isCheckingOut}>
+            Check-out
+          </Button>
+        )}
+        <Button variant="destructive" className="cursor-pointer"
+          onClick={() => setDeletingBookingId(booking.id)}
+          disabled={isDeletingBooking}>
+          Delete Booking
+        </Button>
+        <Button variant="secondary" onClick={moveBack}>
+          Back
+        </Button>
+
       </div>
+      {deletingBookingId !== null && (
+        <ConfirmDelete
+          resourceName="Booking"
+          itemName={`#${deletingBookingId}`}
+          isOpen={true}
+          isDeleting={isDeletingBooking}
+          onClose={() => setDeletingBookingId(null)}
+          onConfirm={() => deleteBooking(deletingBookingId, {
+            onSuccess: () => {
+              setDeletingBookingId(null);
+              navigate("/bookings", { replace: true });
+            },
+          })}
+        />
+      )}
     </div>
   );
 }

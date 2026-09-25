@@ -12,12 +12,19 @@ import Spinner from "@/shared/Spinner";
 import useBookings from "./useBookings";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Eye, CheckCircle } from "lucide-react";
+import { MoreHorizontal, Eye, CheckCircle, LogOut, Trash } from "lucide-react";
 import { PaginationPage } from "@/shared/pagination-page";
 import { Link } from "react-router-dom";
+import { useCheckout } from "../check-in-out/useCheckout";
+import { useDeleteBooking } from "./useDeleteBooking";
+import { useState } from "react";
+import ConfirmDelete from "@/shared/confirmDelete";
 
 export default function BookingTable() {
+  const [deletingBookingId, setDeletingBookingId] = useState<number | null>(null);
   const { bookings, isPending, error, count, page } = useBookings();
+  const { checkOut, isCheckingOut } = useCheckout();
+  const { deleteBooking, isDeletingBooking } = useDeleteBooking();
 
   if (isPending) {
     return <Spinner />;
@@ -119,6 +126,24 @@ export default function BookingTable() {
                             <CheckCircle className="mr-2 h-4 w-4" /> Check-in
                           </DropdownMenuItem>
                         )}
+
+                        {booking.status === "checked-in" && (
+                          <DropdownMenuItem
+                            className="cursor-pointer"
+                            onClick={() => checkOut(booking.id)}
+                            disabled={isCheckingOut}
+                          >
+                            <LogOut className="mr-2 h-4 w-4" /> Check-out
+                          </DropdownMenuItem>
+                        )}
+
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive cursor-pointer"
+                          onClick={() => setDeletingBookingId(booking.id)}
+                          disabled={isDeletingBooking}
+                        >
+                          <Trash className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -135,6 +160,18 @@ export default function BookingTable() {
           </TableRow>
         </TableFooter>
       </Table>
+      {deletingBookingId !== null && (
+        <ConfirmDelete
+          resourceName="Booking"
+          itemName={`#${deletingBookingId}`}
+          isOpen={true}
+          isDeleting={isDeletingBooking}
+          onClose={() => setDeletingBookingId(null)}
+          onConfirm={() => deleteBooking(deletingBookingId, {
+            onSuccess: () => setDeletingBookingId(null),
+          })}
+        />
+      )}
     </div >
   );
 }

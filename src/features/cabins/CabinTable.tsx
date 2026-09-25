@@ -19,6 +19,7 @@ import { Copy, Edit, MoreHorizontal, Trash2 } from "lucide-react"
 import { useState } from "react"
 import useCabins from "./useCabins"
 import useCreateCabin from "./useCreateCabin"
+import useDeleteCabin from "./useDeleteCabin"
 import CabinFormModal from "./CabinFormModal"
 import { useSearchParams } from "react-router-dom"
 
@@ -37,6 +38,7 @@ export default function CabinTable() {
   const [deletingCabin, setDeletingCabin] = useState<Cabin | null>(null)
 
   const { isCreating, createCabinMutate } = useCreateCabin()
+  const { isDeleting, mutate: deleteCabin } = useDeleteCabin()
   const { isPending, cabins } = useCabins()
   const [searchParams] = useSearchParams()
 
@@ -164,7 +166,12 @@ export default function CabinTable() {
 
       {deletingCabin && (
         <ConfirmDelete
-          cabin={deletingCabin}
+          resourceName="Cabin"
+          itemName={deletingCabin.name}
+          isDeleting={isDeleting}
+          onConfirm={() => deleteCabin(deletingCabin.id, {
+            onSuccess: () => setDeletingCabin(null),
+          })}
           isOpen={Boolean(deletingCabin)}
           onClose={() => setDeletingCabin(null)}
         />

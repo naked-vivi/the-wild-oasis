@@ -51,12 +51,18 @@ export async function deleteCabin(id: number) {
     const { data, error } = await supabase
         .from('cabins')
         .delete()
-        .eq('id', id) //change here
+        .eq('id', id)
+        .select('id')
 
     if (error) {
         console.error(error)
-        throw new Error("Cabins cannot be deleted")
+        if (error.code === "23503") {
+            throw new Error("This cabin cannot be deleted because it is linked to existing records, such as bookings.");
+        }
+        throw new Error(`Cabin could not be deleted: ${error.message}`)
+    }
+    if (!data?.length) {
+        throw new Error("No cabin was deleted. It may already be removed, or your account may not have permission to delete it.");
     }
     return data;
 }
-

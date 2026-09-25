@@ -8,45 +8,37 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import useDeleteCabin from "@/features/cabins/useDeleteCabin";
 
 interface ConfirmDeleteProps {
-    cabin: {
-        id: number
-        name: string
-    }
+    resourceName: string
+    itemName: string
+    onConfirm: () => void
+    isDeleting: boolean
     isOpen: boolean
     onClose: () => void
 }
 
-function ConfirmDelete({ cabin, isOpen, onClose }: ConfirmDeleteProps) {
-    const { isDeleting, mutate } = useDeleteCabin();
-
-    function handleDelete() {
-        mutate(cabin.id, {
-            onSuccess: () => onClose(),
-        })
-    }
+function ConfirmDelete({ resourceName, itemName, onConfirm, isDeleting, isOpen, onClose }: ConfirmDeleteProps) {
 
     return (
-        <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <AlertDialog open={isOpen} onOpenChange={(open) => !open && !isDeleting && onClose()}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete cabin{" "}
-                        <span className="font-semibold text-foreground">{cabin.name}</span>{" "}
+                        This action cannot be undone. This will permanently delete {resourceName.toLowerCase()}{" "}
+                        <span className="font-semibold text-foreground">{itemName}</span>{" "}
                         from the database.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isDeleting} onClick={onClose}>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         disabled={isDeleting}
-                        onClick={handleDelete}
+                        onClick={onConfirm}
                     >
-                        {isDeleting ? "Deleting..." : "Delete Cabin"}
+                        {isDeleting ? "Deleting..." : `Delete ${resourceName}`}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
