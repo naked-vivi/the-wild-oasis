@@ -3,6 +3,7 @@ import Spinner from "@/shared/Spinner";
 import useBooking from "./useBooking";
 import { Button } from "@/components/ui/button";
 import { useMoveBack } from "../../hooks/useMoveBack";
+import { Link } from "react-router-dom";
 
 // Map booking status to badge colors.
 const statusToBadgeStyle: Record<string, string> = {
@@ -55,6 +56,11 @@ function BookingDetail() {
         <Button variant="secondary" onClick={moveBack}>
           Back
         </Button>
+        {booking.status === "unconfirmed" && (
+          <Button className="cursor-pointer" render={<Link to={`/checkin/${booking.id}`} />} nativeButton={false}>
+            Check-in
+          </Button>
+        )}
       </div>
     </div>
   );

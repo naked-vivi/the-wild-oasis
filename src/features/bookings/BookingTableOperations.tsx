@@ -1,7 +1,6 @@
 import SortBy from "@/shared/sortBy";
 import Filter from "@/shared/filter";
 
-
 function BookingTableOperations() {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-4">

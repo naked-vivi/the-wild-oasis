@@ -12,7 +12,7 @@ import Spinner from "@/shared/Spinner";
 import useBookings from "./useBookings";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Eye, Trash2 } from "lucide-react";
+import { MoreHorizontal, Eye, CheckCircle } from "lucide-react";
 import { PaginationPage } from "@/shared/pagination-page";
 import { Link } from "react-router-dom";
 
@@ -113,9 +113,12 @@ export default function BookingTable() {
                             <Eye className="mr-2 h-4 w-4" /> View details
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer">
-                          <Trash2 className="mr-2 h-4 w-4" /> Delete
-                        </DropdownMenuItem>
+
+                        {booking.status === "unconfirmed" && (
+                          <DropdownMenuItem className="cursor-pointer" render={<Link to={`/checkin/${booking.id}`} />}>
+                            <CheckCircle className="mr-2 h-4 w-4" /> Check-in
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
