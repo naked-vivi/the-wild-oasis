@@ -13,7 +13,14 @@ function LoginForm() {
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!email || !password || isPending) return
-    login({ email, password })
+    login({ email, password },
+      {
+        onSettled: () => {
+          setEmail("");
+          setPassword("");
+        }
+      }
+    )
   }
 
   return (
