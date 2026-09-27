@@ -1,6 +1,5 @@
 import SignupForm from "@/features/authentication/SignupForm";
 
-
 function Users() {
   return (
     <>
