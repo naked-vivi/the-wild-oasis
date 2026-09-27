@@ -1,3 +1,5 @@
+import UpdatePasswordForm from "@/features/authentication/UpdatePasswordForm";
+import UpdateUserDataForm from "@/features/authentication/UpdateUserDataForm";
 
 function Account() {
   return (
@@ -10,14 +12,14 @@ function Account() {
         <h3 className="text-xl font-semibold text-foreground">
           Update user data
         </h3>
-        <p className="text-sm text-muted-foreground">Update user data form</p>
+        <UpdateUserDataForm />
       </section>
 
       <section className="space-y-4">
         <h3 className="text-xl font-semibold text-foreground">
           Update password
         </h3>
-        <p className="text-sm text-muted-foreground">Update user password form</p>
+        <UpdatePasswordForm />
       </section>
     </div>
   );
