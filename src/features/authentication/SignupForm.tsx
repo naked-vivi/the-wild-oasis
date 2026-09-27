@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldError } from "@/components/ui/field";
-import { toast } from "@/components/ui/toast";
-import { signup } from "@/services/apiAuth";
+import { useSignup } from "./useSignup";
 
 const signupSchema = z.object({
   fullName: z.string().trim().min(1, "Full name is required"),
@@ -32,30 +31,20 @@ function SignupForm() {
     register,
     handleSubmit,
     reset,
-    setError,
-    clearErrors,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: { fullName: "", email: "", password: "", passwordConfirm: "" },
   });
+  const { signup, isPending } = useSignup();
 
-  async function onSubmit({ fullName, email, password }: SignupFormValues) {
-    clearErrors("root");
-    try {
-      const data = await signup({ fullName, email, password });
-      reset();
-      toast.add({
-        type: "success",
-        description: data.session
-          ? "User successfully created."
-          : "Signup request accepted. The user may need to confirm their email before signing in.",
-      });
-    } catch (error) {
-      setError("root", {
-        message: error instanceof Error ? error.message : "Unable to create the user. Please try again.",
-      });
-    }
+  function onSubmit({ fullName, email, password }: SignupFormValues) {
+    if (isPending) return;
+
+    signup(
+      { fullName, email, password },
+      { onSuccess: () => reset() },
+    );
   }
 
   return (
@@ -63,7 +52,7 @@ function SignupForm() {
       noValidate
       onSubmit={handleSubmit(onSubmit)}
       onReset={() => reset()}
-      aria-busy={isSubmitting}
+      aria-busy={isPending}
       className="space-y-6 rounded-xl w-180 mx-auto border border-border bg-card p-6 text-card-foreground shadow-sm sm:p-8"
     >
       {fields.map(({ name, label, type, autoComplete }) => (
@@ -76,7 +65,7 @@ function SignupForm() {
               id={name}
               autoComplete={autoComplete}
               required
-              disabled={isSubmitting}
+              disabled={isPending}
               aria-invalid={Boolean(errors[name])}
               aria-describedby={errors[name] ? `${name}-error` : undefined}
               className="h-10"
@@ -86,14 +75,12 @@ function SignupForm() {
         </div>
       ))}
 
-      {errors.root && <FieldError errors={[errors.root]} />}
-
       <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-6">
-        <Button variant="outline" type="reset" size="lg" disabled={isSubmitting}>
+        <Button variant="outline" type="reset" size="lg" disabled={isPending}>
           Cancel
         </Button>
-        <Button type="submit" size="lg" disabled={isSubmitting}>
-          {isSubmitting ? "Creating user..." : "Create new user"}
+        <Button type="submit" size="lg" disabled={isPending}>
+          {isPending ? "Creating user..." : "Create new user"}
         </Button>
       </div>
     </form>
