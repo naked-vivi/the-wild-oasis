@@ -1,4 +1,4 @@
-import supabase from "./supabase";
+import supabase, { signupClient } from "./supabase";
 
 interface LoginCredentials {
     email: string;
@@ -32,4 +32,22 @@ export async function logout() {
     const { error } = await supabase.auth.signOut();
     if (error)
         throw new Error(error.message)
+}
+
+interface SignupCredentials {
+    fullName: string;
+    email: string;
+    password: string;
+}
+
+export async function signup({ fullName, email, password }: SignupCredentials) {
+    const { data, error } = await signupClient.auth.signUp({
+        email,
+        password,
+        options: { data: { fullName, avatar: "" } },
+    });
+
+    if (error) throw new Error(error.message);
+    if (!data.user) throw new Error("Unable to create the user. Please try again.");
+    return data;
 }
