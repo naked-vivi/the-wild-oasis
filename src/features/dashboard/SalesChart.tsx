@@ -1,59 +1,83 @@
-import styled from "styled-components";
-import DashboardBox from "./DashboardBox";
+import { useId } from "react";
+import { eachDayOfInterval, format, isSameDay, subDays } from "date-fns";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { formatCurrency } from "@/lib/utils";
 
-const StyledSalesChart = styled(DashboardBox)`
-  grid-column: 1 / -1;
+const chartConfig = {
+  totalSales: { label: "Total sales", theme: { light: "#9333ea", dark: "#c084fc" } },
+  extrasSales: { label: "Extras sales", theme: { light: "#16a34a", dark: "#4ade80" } },
+} satisfies ChartConfig;
 
-  /* Hack to change grid line colors */
-  & .recharts-cartesian-grid-horizontal line,
-  & .recharts-cartesian-grid-vertical line {
-    stroke: var(--color-grey-300);
-  }
-`;
+type SalesChartProps = {
+  bookings: {
+    created_at: string;
+    totalPrice: number | null;
+    extrasPrice: number | null;
+  }[];
+  numDays: number;
+};
 
-const fakeData = [
-  { label: "Jan 09", totalSales: 480, extrasSales: 20 },
-  { label: "Jan 10", totalSales: 580, extrasSales: 100 },
-  { label: "Jan 11", totalSales: 550, extrasSales: 150 },
-  { label: "Jan 12", totalSales: 600, extrasSales: 50 },
-  { label: "Jan 13", totalSales: 700, extrasSales: 150 },
-  { label: "Jan 14", totalSales: 800, extrasSales: 150 },
-  { label: "Jan 15", totalSales: 700, extrasSales: 200 },
-  { label: "Jan 16", totalSales: 650, extrasSales: 200 },
-  { label: "Jan 17", totalSales: 600, extrasSales: 300 },
-  { label: "Jan 18", totalSales: 550, extrasSales: 100 },
-  { label: "Jan 19", totalSales: 700, extrasSales: 100 },
-  { label: "Jan 20", totalSales: 800, extrasSales: 200 },
-  { label: "Jan 21", totalSales: 700, extrasSales: 100 },
-  { label: "Jan 22", totalSales: 810, extrasSales: 50 },
-  { label: "Jan 23", totalSales: 950, extrasSales: 250 },
-  { label: "Jan 24", totalSales: 970, extrasSales: 100 },
-  { label: "Jan 25", totalSales: 900, extrasSales: 200 },
-  { label: "Jan 26", totalSales: 950, extrasSales: 300 },
-  { label: "Jan 27", totalSales: 850, extrasSales: 200 },
-  { label: "Jan 28", totalSales: 900, extrasSales: 100 },
-  { label: "Jan 29", totalSales: 800, extrasSales: 300 },
-  { label: "Jan 30", totalSales: 950, extrasSales: 200 },
-  { label: "Jan 31", totalSales: 1100, extrasSales: 300 },
-  { label: "Feb 01", totalSales: 1200, extrasSales: 400 },
-  { label: "Feb 02", totalSales: 1250, extrasSales: 300 },
-  { label: "Feb 03", totalSales: 1400, extrasSales: 450 },
-  { label: "Feb 04", totalSales: 1500, extrasSales: 500 },
-  { label: "Feb 05", totalSales: 1400, extrasSales: 600 },
-  { label: "Feb 06", totalSales: 1450, extrasSales: 400 },
-];
+function SalesChart({ bookings, numDays }: SalesChartProps) {
+  const id = useId().replace(/:/g, "");
+  const today = new Date();
+  // Match the query's cutoff through today, including its partial first day.
+  const days = eachDayOfInterval({ start: subDays(today, numDays), end: today });
+  const chartData = days.map((date) => {
+    const dailyBookings = bookings.filter((booking) =>
+      isSameDay(date, new Date(booking.created_at))
+    );
 
-const isDarkMode = true;
-const colors = isDarkMode
-  ? {
-      totalSales: { stroke: "#4f46e5", fill: "#4f46e5" },
-      extrasSales: { stroke: "#22c55e", fill: "#22c55e" },
-      text: "#e5e7eb",
-      background: "#18212f",
-    }
-  : {
-      totalSales: { stroke: "#4f46e5", fill: "#c7d2fe" },
-      extrasSales: { stroke: "#16a34a", fill: "#dcfce7" },
-      text: "#374151",
-      background: "#fff",
+    return {
+      date: format(date, "yyyy-MM-dd"),
+      label: format(date, "MMM d"),
+      totalSales: dailyBookings.reduce((total, booking) => total + (booking.totalPrice ?? 0), 0),
+      extrasSales: dailyBookings.reduce((total, booking) => total + (booking.extrasPrice ?? 0), 0),
     };
+  });
+
+  return (
+    <Card className="col-span-full min-w-0">
+      <CardHeader>
+        <CardTitle>Sales Overview</CardTitle>
+        <CardDescription>
+          {format(days[0], "MMM d, yyyy")} – {format(today, "MMM d, yyyy")}. Extras are included in total sales.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {bookings.length === 0 && (
+          <p className="mb-4 text-sm text-muted-foreground">No bookings in this period.</p>
+        )}
+        <ChartContainer config={chartConfig} className="h-80 w-full aspect-auto">
+          <AreaChart accessibilityLayer data={chartData} margin={{ left: 0, right: 12, top: 12 }}>
+            <defs>
+              <linearGradient id={`${id}-total`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-totalSales)" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="var(--color-totalSales)" stopOpacity={0.1} />
+              </linearGradient>
+              <linearGradient id={`${id}-extras`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-extrasSales)" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="var(--color-extrasSales)" stopOpacity={0.1} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} />
+            <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} minTickGap={32} />
+            <YAxis tickLine={false} axisLine={false} width={72} tickFormatter={(value) => `$${new Intl.NumberFormat("en-US", { notation: "compact" }).format(value)}`} />
+            <ChartTooltip content={<ChartTooltipContent indicator="dot" formatter={(value, name) => (
+              <div className="flex w-full items-center justify-between gap-4">
+                <span className="text-muted-foreground">{chartConfig[name as keyof typeof chartConfig]?.label ?? name}</span>
+                <span className="font-mono font-medium tabular-nums">{formatCurrency(Number(value))}</span>
+              </div>
+            )} />} />
+            <Area dataKey="totalSales" type="monotone" fill={`url(#${id}-total)`} fillOpacity={1} stroke="var(--color-totalSales)" strokeWidth={2} />
+            <Area dataKey="extrasSales" type="monotone" fill={`url(#${id}-extras)`} fillOpacity={1} stroke="var(--color-extrasSales)" strokeWidth={2} />
+            <ChartLegend content={<ChartLegendContent />} />
+          </AreaChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default SalesChart;
