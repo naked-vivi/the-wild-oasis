@@ -1,132 +1,70 @@
-import styled from "styled-components";
+import { Pie, PieChart } from "recharts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 
-const ChartBox = styled.div`
-  /* Box */
-  background-color: var(--color-grey-0);
-  border: 1px solid var(--color-grey-100);
-  border-radius: var(--border-radius-md);
-
-  padding: 2.4rem 3.2rem;
-  grid-column: 3 / span 2;
-
-  & > *:first-child {
-    margin-bottom: 1.6rem;
-  }
-
-  & .recharts-pie-label-text {
-    font-weight: 600;
-  }
-`;
-
-const startDataLight = [
-  {
-    duration: "1 night",
-    value: 0,
-    color: "#ef4444",
-  },
-  {
-    duration: "2 nights",
-    value: 0,
-    color: "#f97316",
-  },
-  {
-    duration: "3 nights",
-    value: 0,
-    color: "#eab308",
-  },
-  {
-    duration: "4-5 nights",
-    value: 0,
-    color: "#84cc16",
-  },
-  {
-    duration: "6-7 nights",
-    value: 0,
-    color: "#22c55e",
-  },
-  {
-    duration: "8-14 nights",
-    value: 0,
-    color: "#14b8a6",
-  },
-  {
-    duration: "15-21 nights",
-    value: 0,
-    color: "#3b82f6",
-  },
-  {
-    duration: "21+ nights",
-    value: 0,
-    color: "#a855f7",
-  },
+const durationGroups = [
+  { key: "one", label: "1 night", max: 1, color: "#ef4444" },
+  { key: "two", label: "2 nights", max: 2, color: "#f97316" },
+  { key: "three", label: "3 nights", max: 3, color: "#eab308" },
+  { key: "fourFive", label: "4–5 nights", max: 5, color: "#84cc16" },
+  { key: "sixSeven", label: "6–7 nights", max: 7, color: "#22c55e" },
+  { key: "eightFourteen", label: "8–14 nights", max: 14, color: "#14b8a6" },
+  { key: "fifteenTwentyOne", label: "15–21 nights", max: 21, color: "#3b82f6" },
+  { key: "twentyTwoPlus", label: "22+ nights", max: Infinity, color: "#a855f7" },
 ];
 
-const startDataDark = [
-  {
-    duration: "1 night",
-    value: 0,
-    color: "#b91c1c",
-  },
-  {
-    duration: "2 nights",
-    value: 0,
-    color: "#c2410c",
-  },
-  {
-    duration: "3 nights",
-    value: 0,
-    color: "#a16207",
-  },
-  {
-    duration: "4-5 nights",
-    value: 0,
-    color: "#4d7c0f",
-  },
-  {
-    duration: "6-7 nights",
-    value: 0,
-    color: "#15803d",
-  },
-  {
-    duration: "8-14 nights",
-    value: 0,
-    color: "#0f766e",
-  },
-  {
-    duration: "15-21 nights",
-    value: 0,
-    color: "#1d4ed8",
-  },
-  {
-    duration: "21+ nights",
-    value: 0,
-    color: "#7e22ce",
-  },
-];
+const chartConfig = Object.fromEntries(
+  durationGroups.map(({ key, label, color }) => [key, { label, color }])
+) satisfies ChartConfig;
 
-function prepareData(startData, stays) {
-  // A bit ugly code, but sometimes this is what it takes when working with real data 😅
+type DurationChartProps = {
+  confirmedStays: readonly { numNights: number | null }[];
+};
 
-  function incArrayValue(arr, field) {
-    return arr.map((obj) =>
-      obj.duration === field ? { ...obj, value: obj.value + 1 } : obj
-    );
+function DurationChart({ confirmedStays }: DurationChartProps) {
+  const groups = durationGroups.map(({ key }) => ({
+    duration: key,
+    stays: 0,
+    fill: `var(--color-${key})`,
+  }));
+
+  for (const { numNights } of confirmedStays) {
+    if (numNights == null || !Number.isInteger(numNights) || numNights < 1) continue;
+    const index = durationGroups.findIndex(({ max }) => numNights <= max);
+    groups[index].stays += 1;
   }
 
-  const data = stays
-    .reduce((arr, cur) => {
-      const num = cur.numNights;
-      if (num === 1) return incArrayValue(arr, "1 night");
-      if (num === 2) return incArrayValue(arr, "2 nights");
-      if (num === 3) return incArrayValue(arr, "3 nights");
-      if ([4, 5].includes(num)) return incArrayValue(arr, "4-5 nights");
-      if ([6, 7].includes(num)) return incArrayValue(arr, "6-7 nights");
-      if (num >= 8 && num <= 14) return incArrayValue(arr, "8-14 nights");
-      if (num >= 15 && num <= 21) return incArrayValue(arr, "15-21 nights");
-      if (num >= 21) return incArrayValue(arr, "21+ nights");
-      return arr;
-    }, startData)
-    .filter((obj) => obj.value > 0);
+  const chartData = groups.filter(({ stays }) => stays > 0);
+  const totalStays = chartData.reduce((total, group) => total + group.stays, 0);
 
-  return data;
+  return (
+    <Card className="min-w-0 lg:col-span-2">
+      <CardHeader>
+        <CardTitle>Stay Duration Summary</CardTitle>
+        <CardDescription>Checked-in and checked-out stays in the selected period.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {totalStays === 0 ? (
+          <div className="flex h-80 items-center justify-center text-center text-sm text-muted-foreground">
+            No confirmed stays with a recorded duration in this period.
+          </div>
+        ) : (
+          <>
+            <ChartContainer config={chartConfig} className="mx-auto h-80 w-full aspect-auto">
+              <PieChart accessibilityLayer>
+                <ChartTooltip content={<ChartTooltipContent nameKey="duration" hideLabel />} />
+                <Pie data={chartData} dataKey="stays" nameKey="duration" innerRadius={70} outerRadius="75%" stroke="var(--background)" strokeWidth={2} />
+                <ChartLegend content={<ChartLegendContent nameKey="duration" className="flex-wrap gap-x-4 gap-y-2 text-xs" />} />
+              </PieChart>
+            </ChartContainer>
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              {totalStays} {totalStays === 1 ? "stay" : "stays"} in total
+            </p>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
+
+export default DurationChart;
