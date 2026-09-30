@@ -1,6 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRecentBookings } from "./useRecentBookings";
+import { useRecentStays } from "./useRecentStays";
+import Spinner from "@/shared/Spinner";
 
 function DashboardLayout() {
+  const { bookings, isPending: isPending1 } = useRecentBookings();
+  const { stays, confirmedStays, isPending: isPending2 } = useRecentStays();
+
+  if (isPending1 || isPending2) return <Spinner />
+
+
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[auto_34rem_auto]">
       {/* Row 1: 4 Stat/Summary Cards */}
