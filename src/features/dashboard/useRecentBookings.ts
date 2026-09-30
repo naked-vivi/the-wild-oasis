@@ -6,12 +6,13 @@ import { useSearchParams } from "react-router-dom";
 export function useRecentBookings() {
     const [searchParams] = useSearchParams();
 
-    const numDays = !searchParams.get("last") ? 7 : Number(!searchParams.get("last"));
-    const queryDate = subDays(new Date(), numDays).toISOString;
+    const requestedDays = Number(searchParams.get("last") ?? 7);
+    const numDays = [7, 30, 90].includes(requestedDays) ? requestedDays : 7;
+    const queryDate = subDays(new Date(), numDays).toISOString();
 
-    const { isPending, data: bookings } = useQuery({
+    const { isPending, error, data: bookings = [] } = useQuery({
         queryFn: () => getBookingsAfterDate(queryDate),
         queryKey: ["bookings", `last-${numDays}`]
     })
-    return { isPending, bookings }
+    return { isPending, error, bookings ,numDays}
 }
