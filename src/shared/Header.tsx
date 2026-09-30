@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Logout from "@/features/authentication/Logout";
 import UserAvatar from "@/features/authentication/UserAvatar";
 
+import { ModeToggle } from "./mode-toggle";
+
 function Header() {
     const navigate = useNavigate();
 
@@ -17,6 +19,7 @@ function Header() {
                 <User className="h-5 w-5" />
             </button>
 
+            <ModeToggle />
             <Logout />
         </header>
     );

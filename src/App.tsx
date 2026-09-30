@@ -14,6 +14,7 @@ import AppLayout from "./shared/appLayout"
 import { Toaster } from "./components/ui/toast"
 import Checkin from "./pages/Checkin"
 import ProtectedRoute from "./shared/protectedRoute"
+import { ThemeProvider } from "./shared/theme-provider"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,29 +26,31 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools initialIsOpen={false} />
-      <BrowserRouter>
-        <Routes>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <QueryClientProvider client={queryClient}>
+        <ReactQueryDevtools initialIsOpen={false} />
+        <BrowserRouter>
+          <Routes>
 
-          <Route element={<ProtectedRoute> <AppLayout /> </ProtectedRoute>}>
-            <Route index element={<Navigate replace to="dashboard" />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/bookings" element={<Bookings />} />
-            <Route path="/bookings/:bookingId" element={<Booking />} />
-            <Route path="/checkin/:bookingId" element={<Checkin />} />
-            <Route path="/cabins" element={<Cabins />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/account" element={<Account />} />
-          </Route>
+            <Route element={<ProtectedRoute> <AppLayout /> </ProtectedRoute>}>
+              <Route index element={<Navigate replace to="dashboard" />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/bookings" element={<Bookings />} />
+              <Route path="/bookings/:bookingId" element={<Booking />} />
+              <Route path="/checkin/:bookingId" element={<Checkin />} />
+              <Route path="/cabins" element={<Cabins />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/account" element={<Account />} />
+            </Route>
 
-          <Route path="/login" element={<Login />} />
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
-      </BrowserRouter>
-      <Toaster />
-    </QueryClientProvider>
+            <Route path="/login" element={<Login />} />
+            <Route path="*" element={<PageNotFound />} />
+          </Routes>
+        </BrowserRouter>
+        <Toaster />
+      </QueryClientProvider>
+    </ThemeProvider>
   )
 }
 
