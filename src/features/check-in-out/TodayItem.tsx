@@ -1,20 +1,54 @@
-import styled from "styled-components";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import CheckoutButton from "./CheckoutButton";
 
-const StyledTodayItem = styled.li`
-  display: grid;
-  grid-template-columns: 9rem 2rem 1fr 7rem 9rem;
-  gap: 1.2rem;
-  align-items: center;
+type TodayItemProps = {
+  activity: {
+    id: number;
+    status: string;
+    numNights: number;
+    guests: {
+      fullName: string;
+      nationality: string | null;
+      countryFlag: string | null;
+    } | null;
+  };
+};
 
-  font-size: 1.4rem;
-  padding: 0.8rem 0;
-  border-bottom: 1px solid var(--color-grey-100);
+function TodayItem({ activity }: TodayItemProps) {
+  const { id, guests, status, numNights } = activity;
+  const isArrival = status === "unconfirmed";
+  const isDeparture = status === "checked-in";
 
-  &:first-child {
-    border-top: 1px solid var(--color-grey-100);
-  }
-`;
+  return (
+    <li className="grid grid-cols-[5.5rem_minmax(8rem,1fr)_4rem_7rem] items-center gap-3 border-b border-border py-3 text-sm first:border-t">
+      <span className={cn(
+        "rounded-md px-2 py-1 text-center text-xs font-semibold",
+        isArrival
+          ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"
+          : "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
+      )}>
+        {isArrival ? "Arriving" : isDeparture ? "Departing" : "Completed"}
+      </span>
+      
+      <div className="grid min-w-0 grid-cols-[1.5rem_minmax(0,1fr)] items-center gap-2">
+        <span className="flex h-4 w-6 items-center">
+        {guests?.countryFlag && (
+          <img src={guests.countryFlag} alt={guests.nationality ?? "Guest country"} className="h-4 w-6 shrink-0 rounded-sm object-cover" />
+        )}
+        </span>
+        <span className="truncate font-medium" title={guests?.fullName}>{guests?.fullName ?? "Unknown guest"}</span>
+      </div>
+      <span className="whitespace-nowrap text-right tabular-nums text-muted-foreground">{numNights} {numNights === 1 ? "night" : "nights"}</span>
+      <div className="flex justify-end [&>button]:w-full [&>a]:w-full">
+      {isArrival && (
+        <Button size="sm" render={<Link to={`/checkin/${id}`} />}>Check in</Button>
+      )}
+      {isDeparture && <CheckoutButton bookingId={id} />}
+      </div>
+    </li>
+  );
+}
 
-const Guest = styled.div`
-  font-weight: 500;
-`;
+export default TodayItem;

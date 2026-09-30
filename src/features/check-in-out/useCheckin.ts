@@ -23,6 +23,8 @@ export function useCheckin() {
             navigate(`/bookings/${updatedBooking.id}`, { replace: true });
             queryClient.invalidateQueries({ queryKey: ["booking"] });
             queryClient.invalidateQueries({ queryKey: ["bookings"] });
+            queryClient.invalidateQueries({ queryKey: ["today-activity"] });
+            queryClient.invalidateQueries({ queryKey: ["stays"] });
             toast.add({ type: "success", description: `Booking ${updatedBooking.id} successfully checked in` });
         },
         onError: (err: Error) => {

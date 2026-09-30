@@ -1,49 +1,33 @@
-import styled from "styled-components";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import useTodayActivity from "./useTodayActivity";
+import TodayItem from "./TodayItem";
+import Spinner from "@/shared/Spinner";
 
-import Heading from "../../ui/Heading";
-import Row from "../../ui/Row";
+function TodayActivity() {
+  const { isPending, activities, error } = useTodayActivity();
 
-const StyledToday = styled.div`
-  /* Box */
-  background-color: var(--color-grey-0);
-  border: 1px solid var(--color-grey-100);
-  border-radius: var(--border-radius-md);
-
-  padding: 3.2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2.4rem;
-  grid-column: 1 / span 2;
-  padding-top: 2.4rem;
-`;
-
-const TodayList = styled.ul`
-  overflow: scroll;
-  overflow-x: hidden;
-
-  /* Removing scrollbars for webkit, firefox, and ms, respectively */
-  &::-webkit-scrollbar {
-    width: 0 !important;
-  }
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-`;
-
-const NoActivity = styled.p`
-  text-align: center;
-  font-size: 1.8rem;
-  font-weight: 500;
-  margin-top: 0.8rem;
-`;
-
-function Today() {
   return (
-    <StyledToday>
-      <Row type="horizontal">
-        <Heading as="h2">Today</Heading>
-      </Row>
-    </StyledToday>
+    <Card className="flex min-h-0 min-w-0 flex-col lg:col-span-2">
+      <CardHeader>
+        <CardTitle>Today</CardTitle>
+      </CardHeader>
+      <CardContent className="min-h-0 flex-1 overflow-auto" aria-busy={isPending}>
+        {isPending ? (
+          <Spinner />
+        ) : error ? (
+          <p role="alert" className="text-sm text-destructive">{error.message}</p>
+        ) : activities.length > 0 ? (
+          <ul className="min-w-[29rem]">
+            {activities.map((activity) => (
+              <TodayItem activity={activity} key={activity.id} />
+            ))}
+          </ul>
+        ) : (
+          <p className="py-8 text-center text-sm text-muted-foreground">No activity today.</p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
-export default Today;
+export default TodayActivity;
