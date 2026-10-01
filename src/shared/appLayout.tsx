@@ -7,13 +7,13 @@ export default function Layout() {
     return (
         <SidebarProvider defaultOpen>
             <AppSidebar />
-            <div className="w-full">
+            <div className="w-full ">
                 <div className="flex items-center">
                     <SidebarTrigger />
                     <Header />
                 </div>
 
-                <main className=' px-4 py-3 h-screen'>
+                <main className=' px-9 py-6 h-screen'>
                     <Outlet />
                 </main>
             </div>

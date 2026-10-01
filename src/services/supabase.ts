@@ -1,7 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
-export const supabaseUrl = 'https://cabvaqbnxpmhcabizmle.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnZhcWJueHBtaGNhYml6bWxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3Mzc3ODcsImV4cCI6MjEwMzMxMzc4N30.G8wbtuUCo8RS-V6W5zyKuE7p1y-zdKnJXHdaRNtggfI'
+export const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables')
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Keep account creation separate from the signed-in user's session.
