@@ -32,7 +32,7 @@ export default function SortBy({ options }: SortByProps) {
 
     return (
         <Select value={currentSort} onValueChange={handleChange}>
-            <SelectTrigger className="w-50">
+            <SelectTrigger className="w-50" aria-label="Sort results">
                 <SelectValue placeholder="Sort by...">
                     {selectedOption?.label}
                 </SelectValue>

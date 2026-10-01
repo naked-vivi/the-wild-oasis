@@ -15,22 +15,21 @@ export async function getCabins() {
 export async function createCabin(newCabin, id?: number) {
     const hasImagePath = typeof newCabin.image === "string" && newCabin.image.startsWith(supabaseUrl);
 
-    //https://cabvaqbnxpmhcabizmle.supabase.co/storage/v1/object/public/cabin-images/cabin-001.jpg
-    const imageName = `${Math.random()}-${newCabin.image.name}`.replaceAll("/", "")
-    const imagePath = hasImagePath
-        ? newCabin.image
-        : `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`
+    let imagePath = newCabin.image;
+    if (!hasImagePath) {
+        if (!(newCabin.image instanceof File)) {
+            throw new Error("Choose an image for this cabin");
+        }
+        const imageName = `${Math.random()}-${newCabin.image.name}`.replaceAll("/", "");
+        imagePath = `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
+        const { error: storageError } = await supabase.storage
+            .from("cabin-images")
+            .upload(imageName, newCabin.image);
 
-    //1. upload image
-    // if (hasImagePath) return data;
-    const { error: storageError } = await supabase.storage
-        .from("cabin-images")
-        .upload(imageName, newCabin.image);
-
-
-    if (storageError) {
-        console.error(storageError);
-        throw new Error("Cabin image could not be uploaded");
+        if (storageError) {
+            console.error(storageError);
+            throw new Error("Cabin image could not be uploaded");
+        }
     }
 
     //2. create cabin

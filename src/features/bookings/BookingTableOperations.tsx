@@ -3,7 +3,7 @@ import Filter from "@/shared/filter";
 
 function BookingTableOperations() {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+    <div className="flex min-w-0 max-w-full flex-wrap items-center gap-4">
       <Filter
         filterField="status"
         options={[

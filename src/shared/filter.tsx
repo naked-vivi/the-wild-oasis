@@ -25,8 +25,8 @@ export default function Filter({ filterField, options }: FilterProps) {
     }
 
     return (
-        <Tabs value={currentFilter} onValueChange={handleFilterChange}>
-            <TabsList>
+        <Tabs className="min-w-0 max-w-full" value={currentFilter} onValueChange={handleFilterChange}>
+            <TabsList aria-label={`Filter by ${filterField}`} className="max-w-full flex-wrap group-data-horizontal/tabs:h-auto">
                 {options.map((option) => (
                     <TabsTrigger key={option.value} value={option.value}>
                         {option.label}

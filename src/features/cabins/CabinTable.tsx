@@ -123,7 +123,7 @@ export default function CabinTable() {
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     render={
-                      <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                      <Button variant="ghost" className="size-11 p-0 cursor-pointer" aria-label={`Actions for cabin ${cabin.name}`}>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     }

@@ -53,7 +53,7 @@ function SignupForm() {
       onSubmit={handleSubmit(onSubmit)}
       onReset={() => reset()}
       aria-busy={isPending}
-      className="space-y-6 rounded-xl w-180 mx-auto border border-border bg-card p-6 text-card-foreground shadow-sm sm:p-8"
+      className="space-y-6 rounded-xl w-full max-w-180 mx-auto border border-border bg-card p-6 text-card-foreground shadow-sm sm:p-8"
     >
       {fields.map(({ name, label, type, autoComplete }) => (
         <div key={name} className="grid gap-2 sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] sm:items-start sm:gap-6">
@@ -64,6 +64,7 @@ function SignupForm() {
               type={type}
               id={name}
               autoComplete={autoComplete}
+              placeholder={name === "email" ? "name@example.com" : name === "fullName" ? "e.g. Alex Morgan" : undefined}
               required
               disabled={isPending}
               aria-invalid={Boolean(errors[name])}

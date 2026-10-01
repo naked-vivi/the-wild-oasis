@@ -1,177 +1,104 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { BOOKINGS_PAGE_SIZE } from "@/services/apiBookings";
-import Spinner from "@/shared/Spinner";
-import useBookings from "./useBookings";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { MoreHorizontal, Eye, CheckCircle, LogOut, Trash } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Eye, CheckCircle, LogOut, Trash } from "lucide-react";
+import { BOOKINGS_PAGE_SIZE } from "@/services/apiBookings";
+import { formatBookingDate, formatCurrency } from "@/lib/utils";
+import Spinner from "@/shared/Spinner";
 import { PaginationPage } from "@/shared/pagination-page";
-import { Link } from "react-router-dom";
+import ConfirmDelete from "@/shared/confirmDelete";
+import useBookings from "./useBookings";
 import { useCheckout } from "../check-in-out/useCheckout";
 import { useDeleteBooking } from "./useDeleteBooking";
-import { useState } from "react";
-import ConfirmDelete from "@/shared/confirmDelete";
+
+const statusStyles: Record<string, string> = {
+  unconfirmed: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
+  "checked-in": "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+  "checked-out": "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+};
+
+function BookingStatus({ status }: { status: string }) {
+  return <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${statusStyles[status] || "bg-secondary text-secondary-foreground"}`}>{status?.replaceAll("-", " ") || "Unknown"}</span>;
+}
+
+type BookingActionsProps = {
+  id: number;
+  status: string;
+  busy: boolean;
+  onCheckout: (id: number) => void;
+  onDelete: (id: number) => void;
+};
+
+function BookingActions({ id, status, busy, onCheckout, onDelete }: BookingActionsProps) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="ghost" className="size-11 p-0" aria-label={`Actions for booking #${id}`}><MoreHorizontal aria-hidden="true" /></Button>} />
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem render={<Link to={`/bookings/${id}`} />}><Eye aria-hidden="true" />View details</DropdownMenuItem>
+        {status === "unconfirmed" && <DropdownMenuItem render={<Link to={`/checkin/${id}`} />}><CheckCircle aria-hidden="true" />Check-in</DropdownMenuItem>}
+        {status === "checked-in" && <DropdownMenuItem disabled={busy} onClick={() => onCheckout(id)}><LogOut aria-hidden="true" />Check-out</DropdownMenuItem>}
+        <DropdownMenuItem className="text-destructive focus:text-destructive" disabled={busy} onClick={() => onDelete(id)}><Trash aria-hidden="true" />Delete</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export default function BookingTable() {
   const [deletingBookingId, setDeletingBookingId] = useState<number | null>(null);
   const { bookings, isPending, error, count, page } = useBookings();
   const { checkOut, isCheckingOut } = useCheckout();
   const { deleteBooking, isDeletingBooking } = useDeleteBooking();
+  const actions = { busy: isCheckingOut || isDeletingBooking, onCheckout: (id: number) => checkOut(id), onDelete: setDeletingBookingId };
 
-  if (isPending) {
-    return <Spinner />;
-  }
-
+  if (isPending) return <Spinner />;
   if (error) return <p role="alert">{error.message}</p>;
+  if (bookings.length === 0) return <p role="status" className="rounded-md border p-8 text-center text-muted-foreground">No bookings found. Try another status filter.</p>;
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader className="bg-muted/50">
-          <TableRow>
-            <TableHead className="w-30">Cabin</TableHead>
-            <TableHead>Guest</TableHead>
-            <TableHead>Dates</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-            <TableHead className="w-12.5"></TableHead>
-          </TableRow>
-        </TableHeader>
-
-        <TableBody>
-          {bookings.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                No bookings found.
-              </TableCell>
+    <>
+      <ul className="space-y-3 md:hidden" aria-label="Bookings">
+        {bookings.map((booking) => (
+          <li key={booking.id} className="min-w-0 rounded-xl border bg-card p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">Booking #{booking.id} · Cabin {booking.cabins?.name || booking.cabinName}</p>
+                <h2 className="mt-1 wrap-break-word font-semibold">{booking.guests?.fullName || booking.guestName}</h2>
+                <p className="break-all text-sm text-muted-foreground">{booking.guests?.email || booking.guestEmail}</p>
+              </div>
+              <BookingActions id={booking.id} status={booking.status} {...actions} />
+            </div>
+            <dl className="my-4 grid grid-cols-2 gap-3 text-sm">
+              <div><dt className="text-muted-foreground">Check-in</dt><dd className="mt-1 font-medium">{formatBookingDate(booking.startDate)}</dd></div>
+              <div><dt className="text-muted-foreground">Check-out</dt><dd className="mt-1 font-medium">{formatBookingDate(booking.endDate)}</dd></div>
+            </dl>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
+              <BookingStatus status={booking.status} />
+              <p className="text-sm"><span className="text-muted-foreground">{booking.numNights} {booking.numNights === 1 ? "night" : "nights"} · </span><span className="font-semibold">{formatCurrency(booking.totalPrice)}</span></p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <div className="hidden rounded-md border md:block">
+        <Table>
+          <TableHeader className="bg-muted/50"><TableRow>
+            <TableHead>Cabin</TableHead><TableHead>Guest</TableHead><TableHead>Dates</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Amount</TableHead><TableHead><span className="sr-only">Actions</span></TableHead>
+          </TableRow></TableHeader>
+          <TableBody>{bookings.map((booking) => (
+            <TableRow key={booking.id}>
+              <TableCell className="font-semibold">{booking.cabins?.name || booking.cabinName}</TableCell>
+              <TableCell><div className="flex flex-col"><span className="font-medium">{booking.guests?.fullName || booking.guestName}</span><span className="text-xs text-muted-foreground">{booking.guests?.email || booking.guestEmail}</span></div></TableCell>
+              <TableCell><div className="font-medium">{formatBookingDate(booking.startDate)} &mdash; {formatBookingDate(booking.endDate)}</div><span className="text-xs text-muted-foreground">{booking.numNights} {booking.numNights === 1 ? "night" : "nights"}</span></TableCell>
+              <TableCell><BookingStatus status={booking.status} /></TableCell>
+              <TableCell className="text-right font-medium">{formatCurrency(booking.totalPrice)}</TableCell>
+              <TableCell className="text-right"><BookingActions id={booking.id} status={booking.status} {...actions} /></TableCell>
             </TableRow>
-          ) : (
-            bookings.map((booking) => {
-              // Status badge styling helper
-              const statusStyles: Record<string, string> = {
-                unconfirmed: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
-                "checked-in": "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
-                "checked-out": "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
-              };
-
-              return (
-                <TableRow key={booking.id} className="hover:bg-muted/50 transition-colors">
-                  {/* Cabin Name */}
-                  <TableCell className="font-semibold text-foreground">
-                    {booking.cabins?.name || booking.cabinName}
-                  </TableCell>
-
-                  {/* Guest Info */}
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{booking.guests?.fullName || booking.guestName}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {booking.guests?.email || booking.guestEmail}
-                      </span>
-                    </div>
-                  </TableCell>
-
-                  {/* Stay Dates */}
-                  <TableCell className="text-sm">
-                    <div className="font-medium">
-                      {booking.startDate} &mdash; {booking.endDate}
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {booking.numNights} night stay
-                    </span>
-                  </TableCell>
-
-                  {/* Status Badge */}
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${statusStyles[booking.status] || "bg-secondary text-secondary-foreground"
-                        }`}
-                    >
-                      {booking.status?.replace("-", " ")}
-                    </span>
-                  </TableCell>
-
-                  {/* Amount */}
-                  <TableCell className="text-right font-medium text-foreground">
-                    ${booking.totalPrice}
-                  </TableCell>
-
-                  {/* Action Menu */}
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        render={
-                          <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        }
-                      />
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem className="cursor-pointer">
-                          <Link to={`/bookings/${booking.id}`} className="flex items-center">
-                            <Eye className="mr-2 h-4 w-4" /> View details
-                          </Link>
-                        </DropdownMenuItem>
-
-                        {booking.status === "unconfirmed" && (
-                          <DropdownMenuItem className="cursor-pointer" render={<Link to={`/checkin/${booking.id}`} />}>
-                            <CheckCircle className="mr-2 h-4 w-4" /> Check-in
-                          </DropdownMenuItem>
-                        )}
-
-                        {booking.status === "checked-in" && (
-                          <DropdownMenuItem
-                            className="cursor-pointer"
-                            onClick={() => checkOut(booking.id)}
-                            disabled={isCheckingOut}
-                          >
-                            <LogOut className="mr-2 h-4 w-4" /> Check-out
-                          </DropdownMenuItem>
-                        )}
-
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive cursor-pointer"
-                          onClick={() => setDeletingBookingId(booking.id)}
-                          disabled={isDeletingBooking}
-                        >
-                          <Trash className="mr-2 h-4 w-4" /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-        <TableFooter className="bg-muted/50">
-          <TableRow>
-            <TableCell colSpan={6}>
-              <PaginationPage count={count} page={page} pageSize={BOOKINGS_PAGE_SIZE} />
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
-      {deletingBookingId !== null && (
-        <ConfirmDelete
-          resourceName="Booking"
-          itemName={`#${deletingBookingId}`}
-          isOpen={true}
-          isDeleting={isDeletingBooking}
-          onClose={() => setDeletingBookingId(null)}
-          onConfirm={() => deleteBooking(deletingBookingId, {
-            onSuccess: () => setDeletingBookingId(null),
-          })}
-        />
-      )}
-    </div >
+          ))}</TableBody>
+        </Table>
+      </div>
+      {count > BOOKINGS_PAGE_SIZE && <div className="mt-3 rounded-md border bg-muted/50 p-2"><PaginationPage count={count} page={page} pageSize={BOOKINGS_PAGE_SIZE} /></div>}
+      {deletingBookingId !== null && <ConfirmDelete resourceName="Booking" itemName={`#${deletingBookingId}`} isOpen isDeleting={isDeletingBooking} onClose={() => setDeletingBookingId(null)} onConfirm={() => deleteBooking(deletingBookingId, { onSuccess: () => setDeletingBookingId(null) })} />}
+    </>
   );
 }

@@ -52,7 +52,7 @@ export function PaginationPage({ count, page, pageSize }: PaginationPageProps) {
 
     return (
         <Pagination>
-            <PaginationContent>
+            <PaginationContent className="flex-wrap justify-center">
                 <PaginationItem>
                     <PaginationPrevious {...linkProps(page - 1, page <= 1)} />
                 </PaginationItem>

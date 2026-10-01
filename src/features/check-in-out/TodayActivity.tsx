@@ -11,19 +11,19 @@ function TodayActivity() {
       <CardHeader>
         <CardTitle>Today</CardTitle>
       </CardHeader>
-      <CardContent className="min-h-0 flex-1 overflow-auto" aria-busy={isPending}>
+      <CardContent className="flex min-h-0 flex-1 flex-col overflow-auto" aria-busy={isPending}>
         {isPending ? (
           <Spinner />
         ) : error ? (
           <p role="alert" className="text-sm text-destructive">{error.message}</p>
         ) : activities.length > 0 ? (
-          <ul className="min-w-[29rem]">
+          <ul className="min-w-116">
             {activities.map((activity) => (
               <TodayItem activity={activity} key={activity.id} />
             ))}
           </ul>
         ) : (
-          <p className="py-8 text-center text-sm text-muted-foreground">No activity today.</p>
+          <p className="my-auto py-8 text-center text-sm text-muted-foreground">No activity today.</p>
         )}
       </CardContent>
     </Card>

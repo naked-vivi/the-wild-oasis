@@ -25,9 +25,11 @@ export function AppSidebar() {
                 </Collapsible>
             </SidebarContent>
 
-            <SidebarFooter>
-                <Uploader />
-            </SidebarFooter>
+            {import.meta.env.DEV && (
+                <SidebarFooter>
+                    <Uploader />
+                </SidebarFooter>
+            )}
         </Sidebar>
     )
 }

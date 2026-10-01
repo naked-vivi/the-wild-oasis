@@ -1,9 +1,16 @@
-import { formatDistance, parseISO, differenceInDays } from "date-fns"
+import { format, isValid, formatDistance, parseISO, differenceInDays } from "date-fns"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+// Booking dates represent calendar days; preserve the day stored by the hotel.
+export function formatBookingDate(value: string | null | undefined) {
+  if (!value) return "Date unavailable"
+  const date = parseISO(value.slice(0, 10))
+  return isValid(date) ? format(date, "MMM d, yyyy") : "Date unavailable"
 }
 
 export const subtractDates = (dateStr1: Date | string, dateStr2: Date | string) =>

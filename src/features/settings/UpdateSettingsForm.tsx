@@ -1,189 +1,77 @@
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import useSettings from "./useSettings";
 import Spinner from "@/shared/Spinner";
 import useUpdateSettings from "./useUpdateSettings";
 
 const settingsSchema = z.object({
-  minBookingLength: z.coerce.number().min(1, "Minimum nights must be at least 1"),
-  maxBookingLength: z.coerce.number().min(1, "Maximum nights must be at least 1"),
-  maxGuestsPerBooking: z.coerce.number().min(1, "Maximum guests must be at least 1"),
-  breakfastPrice: z.coerce.number().min(0, "Breakfast price cannot be negative"),
+  minBookingLength: z.coerce.number({ invalid_type_error: "Enter a whole number greater than 0" }).int("Enter a whole number of nights").min(1, "Minimum stay must be at least 1 night"),
+  maxBookingLength: z.coerce.number({ invalid_type_error: "Enter a whole number greater than 0" }).int("Enter a whole number of nights").min(1, "Maximum stay must be at least 1 night"),
+  maxGuestsPerBooking: z.coerce.number({ invalid_type_error: "Enter a whole number greater than 0" }).int("Enter a whole number of guests").min(1, "Allow at least 1 guest"),
+  breakfastPrice: z.coerce.number({ invalid_type_error: "Enter a breakfast price, such as 10 or 0 for free" }).finite().min(0, "Breakfast price cannot be negative"),
+}).refine((values) => values.maxBookingLength >= values.minBookingLength, {
+  message: "Maximum stay must be at least as long as the minimum stay",
+  path: ["maxBookingLength"],
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
 
-export default function UpdateSettingsForm() {
-  const { isPending, settings } = useSettings();
-  const { isUpdating, updateSettings } = useUpdateSettings();
+const fields = [
+  { name: "minBookingLength", label: "Minimum stay (nights)", hint: "The shortest stay guests can book.", min: 1, step: 1 },
+  { name: "maxBookingLength", label: "Maximum stay (nights)", hint: "Must be at least as long as the minimum stay.", min: 1, step: 1 },
+  { name: "maxGuestsPerBooking", label: "Maximum guests per booking", hint: "Enter a whole number of guests.", min: 1, step: 1 },
+  { name: "breakfastPrice", label: "Breakfast price (USD)", hint: "Price per guest, per night. Enter 0 for free breakfast.", min: 0, step: 0.01 },
+] as const;
 
-  const form = useForm<SettingsFormValues>({
+function SettingsForm({ initialValues }: { initialValues: SettingsFormValues }) {
+  const { isUpdating, updateSettings } = useUpdateSettings();
+  const { register, handleSubmit, reset, setError, formState: { errors, isDirty } } = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
-    defaultValues: {
-      minBookingLength: settings?.minBookingLength ?? 0,
-      maxBookingLength: settings?.maxBookingLength ?? 0,
-      maxGuestsPerBooking: settings?.maxGuestsPerBooking ?? 0,
-      breakfastPrice: settings?.breakfastPrice ?? 0,
-    },
+    defaultValues: initialValues,
   });
 
   function onSubmit(values: SettingsFormValues) {
-    console.log("Updated Settings:", values);
-    // Call your update mutation here
+    if (isUpdating) return;
+    updateSettings(values, {
+      onSuccess: () => reset(values),
+      onError: (error: Error) => setError("root", { message: error.message }),
+    });
   }
 
-  function handleBlur(field: keyof SettingsFormValues, value: string, currentValue: number) {
-    const numericValue = Number(value);
-    // Skip API call if value didn't change, is invalid, or if empty
-    if (!value || isNaN(numericValue) || numericValue === currentValue) return;
+  return (
+    <form noValidate onSubmit={handleSubmit(onSubmit)} aria-busy={isUpdating} className="space-y-6">
+      {fields.map(({ name, label, hint, min, step }) => (
+        <Field key={name} data-invalid={Boolean(errors[name])}>
+          <FieldLabel htmlFor={name}>{label}</FieldLabel>
+          <Input {...register(name, { valueAsNumber: true })} id={name} type="number" min={min} step={step} required disabled={isUpdating}
+            aria-invalid={Boolean(errors[name])} aria-describedby={`${name}-hint${errors[name] ? ` ${name}-error` : ""}`} />
+          <p id={`${name}-hint`} className="text-sm text-muted-foreground">{hint}</p>
+          {errors[name] && <FieldError id={`${name}-error`} errors={[errors[name]]} />}
+        </Field>
+      ))}
+      {errors.root && <p role="alert" className="text-sm text-destructive">{errors.root.message}</p>}
+      <div className="flex flex-wrap justify-end gap-3 border-t pt-4">
+        <Button type="button" variant="outline" onClick={() => reset()} disabled={isUpdating || !isDirty}>Reset changes</Button>
+        <Button type="submit" disabled={isUpdating || !isDirty}>{isUpdating ? "Saving settings..." : "Save settings"}</Button>
+      </div>
+    </form>
+  );
+}
 
-    // Trigger your API mutation
-    updateSettings({ [field]: numericValue });
-  }
-
+export default function UpdateSettingsForm() {
+  const { isPending, settings, error } = useSettings();
   if (isPending) return <Spinner />;
-
-  const {
-    minBookingLength,
-    maxBookingLength,
-    maxGuestsPerBooking,
-    breakfastPrice,
-  } = settings || {};
+  if (error || !settings) return <p role="alert">{error?.message || "Settings could not be loaded."}</p>;
 
   return (
     <Card className="max-w-xl">
-      <CardHeader>
-        <CardTitle>Update Settings</CardTitle>
-        <CardDescription>
-          Manage your booking constraints and default pricing.
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="space-y-6">
-        {/* Minimum Nights */}
-        <Controller
-          name="minBookingLength"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="minBookingLength">
-                Minimum nights/booking
-              </FieldLabel>
-              <Input
-                {...field}
-                type="number"
-                id="minBookingLength"
-                aria-invalid={fieldState.invalid}
-                disabled={isUpdating}
-                onBlur={(e) => {
-                  field.onBlur();
-                  handleBlur("minBookingLength", e.target.value, minBookingLength);
-                }}
-              />
-              {fieldState.invalid && (
-                <FieldError errors={[fieldState.error]} />
-              )}
-            </Field>
-          )}
-        />
-
-        {/* Maximum Nights */}
-        <Controller
-          name="maxBookingLength"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="maxBookingLength">
-                Maximum nights/booking
-              </FieldLabel>
-              <Input
-                {...field}
-                type="number"
-                id="maxBookingLength"
-                aria-invalid={fieldState.invalid}
-                disabled={isUpdating}
-                onBlur={(e) => {
-                  field.onBlur();
-                  handleBlur("maxBookingLength", e.target.value, maxBookingLength);
-                }}
-              />
-              {fieldState.invalid && (
-                <FieldError errors={[fieldState.error]} />
-              )}
-            </Field>
-          )}
-        />
-
-        {/* Maximum Guests */}
-        <Controller
-          name="maxGuestsPerBooking"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="maxGuestsPerBooking">
-                Maximum guests/booking
-              </FieldLabel>
-              <Input
-                {...field}
-                type="number"
-                id="maxGuestsPerBooking"
-                aria-invalid={fieldState.invalid}
-                disabled={isUpdating}
-                onBlur={(e) => {
-                  field.onBlur();
-                  handleBlur("maxGuestsPerBooking", e.target.value, maxGuestsPerBooking);
-                }}
-              />
-              {fieldState.invalid && (
-                <FieldError errors={[fieldState.error]} />
-              )}
-            </Field>
-          )}
-        />
-
-        {/* Breakfast Price */}
-        <Controller
-          name="breakfastPrice"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="breakfastPrice">
-                Breakfast price ($)
-              </FieldLabel>
-              <Input
-                {...field}
-                type="number"
-                step="0.01"
-                id="breakfastPrice"
-                aria-invalid={fieldState.invalid}
-                disabled={isUpdating}
-                onBlur={(e) => {
-                  field.onBlur();
-                  handleBlur("breakfastPrice", e.target.value, breakfastPrice);
-                }}
-              />
-              {fieldState.invalid && (
-                <FieldError errors={[fieldState.error]} />
-              )}
-            </Field>
-          )}
-        />
-
-        <div className="flex justify-end pt-2">
-          <Button onClick={form.handleSubmit(onSubmit)}>Update settings</Button>
-        </div>
-      </CardContent>
+      <CardHeader><CardTitle>Update Settings</CardTitle><CardDescription>Manage booking limits and pricing. Changes apply when you select Save settings.</CardDescription></CardHeader>
+      <CardContent><SettingsForm initialValues={{ minBookingLength: settings.minBookingLength, maxBookingLength: settings.maxBookingLength, maxGuestsPerBooking: settings.maxGuestsPerBooking, breakfastPrice: settings.breakfastPrice }} /></CardContent>
     </Card>
   );
 }

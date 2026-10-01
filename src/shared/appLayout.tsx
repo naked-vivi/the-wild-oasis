@@ -1,19 +1,18 @@
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { Outlet } from 'react-router-dom'
-import Header from './Header'
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from './AppSideBar'
+import Header from './Header'
 
 export default function Layout() {
     return (
         <SidebarProvider defaultOpen>
             <AppSidebar />
-            <div className="w-full ">
+            <div className="min-w-0 flex-1">
                 <div className="flex items-center">
-                    <SidebarTrigger />
                     <Header />
                 </div>
 
-                <main className=' px-9 py-6 h-screen'>
+                <main className="px-4 py-6 sm:px-6 lg:px-9">
                     <Outlet />
                 </main>
             </div>
