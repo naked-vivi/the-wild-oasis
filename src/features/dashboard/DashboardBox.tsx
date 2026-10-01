@@ -1,16 +1,13 @@
-import styled from "styled-components";
+import type { ComponentProps } from "react";
+import { cn } from "@/lib/utils";
 
-const DashboardBox = styled.div`
-  /* Box */
-  background-color: var(--color-grey-0);
-  border: 1px solid var(--color-grey-100);
-  border-radius: var(--border-radius-md);
-
-  padding: 3.2rem;
-
-  display: flex;
-  flex-direction: column;
-  gap: 2.4rem;
-`;
+function DashboardBox({ className, ...props }: ComponentProps<"div">) {
+  return (
+    <div
+      className={cn("flex flex-col gap-6 rounded-md border bg-card p-8 text-card-foreground", className)}
+      {...props}
+    />
+  );
+}
 
 export default DashboardBox;
