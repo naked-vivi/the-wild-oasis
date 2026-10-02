@@ -49,7 +49,7 @@ function SalesChart({ bookings, numDays }: SalesChartProps) {
         {bookings.length === 0 && (
           <p className="mb-4 text-sm text-muted-foreground">No bookings in this period.</p>
         )}
-        <ChartContainer config={chartConfig} className="h-80 w-full aspect-auto">
+        <ChartContainer config={chartConfig} className="h-64 w-full min-w-0 aspect-auto @min-[36rem]:h-80">
           <AreaChart accessibilityLayer data={chartData} margin={{ left: 0, right: 12, top: 12 }}>
             <defs>
               <linearGradient id={`${id}-total`} x1="0" y1="0" x2="0" y2="1">
@@ -63,7 +63,7 @@ function SalesChart({ bookings, numDays }: SalesChartProps) {
             </defs>
             <CartesianGrid vertical={false} />
             <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} minTickGap={32} />
-            <YAxis tickLine={false} axisLine={false} width={72} tickFormatter={(value) => `$${new Intl.NumberFormat("en-US", { notation: "compact" }).format(value)}`} />
+            <YAxis tickLine={false} axisLine={false} width={52} tickFormatter={(value) => `$${new Intl.NumberFormat("en-US", { notation: "compact" }).format(value)}`} />
             <ChartTooltip content={<ChartTooltipContent indicator="dot" formatter={(value, name) => (
               <div className="flex w-full items-center justify-between gap-4">
                 <span className="text-muted-foreground">{chartConfig[name as keyof typeof chartConfig]?.label ?? name}</span>
@@ -72,7 +72,7 @@ function SalesChart({ bookings, numDays }: SalesChartProps) {
             )} />} />
             <Area dataKey="totalSales" type="monotone" fill={`url(#${id}-total)`} fillOpacity={1} stroke="var(--color-totalSales)" strokeWidth={2} />
             <Area dataKey="extrasSales" type="monotone" fill={`url(#${id}-extras)`} fillOpacity={1} stroke="var(--color-extrasSales)" strokeWidth={2} />
-            <ChartLegend content={<ChartLegendContent />} />
+            <ChartLegend content={<ChartLegendContent className="flex-wrap gap-x-4 gap-y-2" />} />
           </AreaChart>
         </ChartContainer>
       </CardContent>

@@ -15,7 +15,7 @@ function AddCabin() {
     const [isOpen, setIsOpen] = useState(false);
     return (
         <div className="flex items-center justify-start my-6">
-            <Button onClick={() => setIsOpen(true)}>Add new cabin</Button>
+            <Button className="w-full sm:w-auto" onClick={() => setIsOpen(true)}>Add new cabin</Button>
 
             <CabinFormModal
                 isOpen={isOpen}

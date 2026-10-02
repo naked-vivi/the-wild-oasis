@@ -23,7 +23,7 @@ function DashboardLayout() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[auto_34rem_auto]">
+    <div className="grid min-w-0 grid-cols-1 gap-4 @min-[36rem]:grid-cols-2 @min-[64rem]:grid-cols-4 sm:gap-6">
       <Stats bookings={bookings} confirmedStays={confirmedStays} numDays={numDays} cabinCount={cabins.length} />
 
       <TodayActivity />

@@ -1,6 +1,6 @@
 import { Pie, PieChart } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 
 const durationGroups = [
   { key: "one", label: "1 night", max: 1, color: "#ef4444" },
@@ -38,25 +38,32 @@ function DurationChart({ confirmedStays }: DurationChartProps) {
   const totalStays = chartData.reduce((total, group) => total + group.stays, 0);
 
   return (
-    <Card className="min-w-0 lg:col-span-2">
+    <Card className="col-span-full min-w-0 @min-[64rem]:col-span-2">
       <CardHeader>
         <CardTitle>Stay Duration Summary</CardTitle>
         <CardDescription>Checked-in and checked-out stays in the selected period.</CardDescription>
       </CardHeader>
       <CardContent>
         {totalStays === 0 ? (
-          <div className="flex h-80 items-center justify-center text-center text-sm text-muted-foreground">
+          <div className="flex h-64 items-center justify-center text-center text-sm text-muted-foreground @min-[36rem]:h-72">
             No confirmed stays with a recorded duration in this period.
           </div>
         ) : (
           <>
-            <ChartContainer config={chartConfig} className="mx-auto h-80 w-full aspect-auto">
+            <ChartContainer config={chartConfig} className="mx-auto h-64 w-full min-w-0 aspect-auto @min-[36rem]:h-72">
               <PieChart accessibilityLayer>
                 <ChartTooltip content={<ChartTooltipContent nameKey="duration" hideLabel />} />
-                <Pie data={chartData} dataKey="stays" nameKey="duration" innerRadius={70} outerRadius="75%" stroke="var(--background)" strokeWidth={2} />
-                <ChartLegend content={<ChartLegendContent nameKey="duration" className="flex-wrap gap-x-4 gap-y-2 text-xs" />} />
+                <Pie data={chartData} dataKey="stays" nameKey="duration" innerRadius="50%" outerRadius="80%" stroke="var(--background)" strokeWidth={2} />
               </PieChart>
             </ChartContainer>
+            <ul aria-label="Stay duration legend" className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs">
+              {durationGroups.filter(({ key }) => chartData.some((group) => group.duration === key)).map(({ key, label, color }) => (
+                <li key={key} className="flex items-center gap-2">
+                  <span aria-hidden="true" className="size-2 shrink-0 rounded-xs" style={{ backgroundColor: color }} />
+                  {label}
+                </li>
+              ))}
+            </ul>
             <p className="mt-4 text-center text-sm text-muted-foreground">
               {totalStays} {totalStays === 1 ? "stay" : "stays"} in total
             </p>

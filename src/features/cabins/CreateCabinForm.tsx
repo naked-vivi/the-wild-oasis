@@ -213,7 +213,7 @@ export default function CreateCabinForm({ cabinToEdit = {}, onClose }: CreateCab
               )}
             />
 
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex flex-wrap justify-end gap-3 pt-4">
               <Button
                 type="button"
                 variant="outline"

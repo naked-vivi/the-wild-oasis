@@ -14,12 +14,12 @@ const sortOptions = [
 
 function Cabins() {
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 my-6">
+    <div className="min-w-0">
+      <div className="my-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           All cabins
         </h1>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-4">
           <Filter
             filterField="discount"
             options={[

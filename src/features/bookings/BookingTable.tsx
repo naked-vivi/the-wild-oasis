@@ -58,29 +58,7 @@ export default function BookingTable() {
 
   return (
     <>
-      <ul className="space-y-3 md:hidden" aria-label="Bookings">
-        {bookings.map((booking) => (
-          <li key={booking.id} className="min-w-0 rounded-xl border bg-card p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Booking #{booking.id} · Cabin {booking.cabins?.name || booking.cabinName}</p>
-                <h2 className="mt-1 wrap-break-word font-semibold">{booking.guests?.fullName || booking.guestName}</h2>
-                <p className="break-all text-sm text-muted-foreground">{booking.guests?.email || booking.guestEmail}</p>
-              </div>
-              <BookingActions id={booking.id} status={booking.status} {...actions} />
-            </div>
-            <dl className="my-4 grid grid-cols-2 gap-3 text-sm">
-              <div><dt className="text-muted-foreground">Check-in</dt><dd className="mt-1 font-medium">{formatBookingDate(booking.startDate)}</dd></div>
-              <div><dt className="text-muted-foreground">Check-out</dt><dd className="mt-1 font-medium">{formatBookingDate(booking.endDate)}</dd></div>
-            </dl>
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
-              <BookingStatus status={booking.status} />
-              <p className="text-sm"><span className="text-muted-foreground">{booking.numNights} {booking.numNights === 1 ? "night" : "nights"} · </span><span className="font-semibold">{formatCurrency(booking.totalPrice)}</span></p>
-            </div>
-          </li>
-        ))}
-      </ul>
-      <div className="hidden rounded-md border md:block">
+      <div className="min-w-0 rounded-md border">
         <Table>
           <TableHeader className="bg-muted/50"><TableRow>
             <TableHead>Cabin</TableHead><TableHead>Guest</TableHead><TableHead>Dates</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Amount</TableHead><TableHead><span className="sr-only">Actions</span></TableHead>

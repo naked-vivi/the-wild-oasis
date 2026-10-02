@@ -89,7 +89,8 @@ export default function CabinTable() {
 
   return (
     <>
-      <Table className="border">
+      <div className="min-w-0 max-w-full rounded-md border">
+      <Table className="min-w-140" aria-label="Cabins">
         <TableHeader className="bg-accent">
           <TableRow>
             <TableHead>Image</TableHead>
@@ -108,7 +109,7 @@ export default function CabinTable() {
                 <img
                   src={cabin.image}
                   alt={cabin.name}
-                  className="w-16 h-10 object-cover rounded-sm"
+                  className="h-10 w-16 min-w-16 rounded-sm object-cover"
                 />
               </TableCell>
               <TableCell className="font-medium">{cabin.name}</TableCell>
@@ -157,6 +158,7 @@ export default function CabinTable() {
         </TableBody>
         
       </Table>
+      </div>
 
       <CabinFormModal
         isOpen={Boolean(editingCabin)}

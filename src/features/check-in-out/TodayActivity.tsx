@@ -7,17 +7,17 @@ function TodayActivity() {
   const { isPending, activities, error } = useTodayActivity();
 
   return (
-    <Card className="flex min-h-0 min-w-0 flex-col lg:col-span-2">
+    <Card className="col-span-full flex max-h-136 min-h-80 min-w-0 flex-col @min-[64rem]:col-span-2">
       <CardHeader>
         <CardTitle>Today</CardTitle>
       </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col overflow-auto" aria-busy={isPending}>
+      <CardContent className="@container/activity flex min-h-0 flex-1 flex-col overflow-y-auto" aria-busy={isPending}>
         {isPending ? (
           <Spinner />
         ) : error ? (
           <p role="alert" className="text-sm text-destructive">{error.message}</p>
         ) : activities.length > 0 ? (
-          <ul className="min-w-116">
+          <ul className="min-w-0">
             {activities.map((activity) => (
               <TodayItem activity={activity} key={activity.id} />
             ))}

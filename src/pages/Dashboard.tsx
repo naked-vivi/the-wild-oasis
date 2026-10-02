@@ -3,14 +3,14 @@ import DashboardLayout from "@/features/dashboard/DashboardLayout";
 
 function Dashboard() {
   return (
-    <>
-      <h1 className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="text-3xl font-bold tracking-tight text-foreground my-6">Dashboard</div>
+    <div className="@container min-w-0">
+      <div className="my-6 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
         <DashboardFilter />
-      </h1>
+      </div>
 
       <DashboardLayout />
-    </>
+    </div>
   );
 }
 

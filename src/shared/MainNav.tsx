@@ -1,4 +1,6 @@
 import { NavLink } from "react-router-dom";
+import type { MouseEvent } from "react";
+import { useSidebar } from "@/components/ui/sidebar";
 import {
   Home,
   CalendarDays,
@@ -8,6 +10,13 @@ import {
 } from "lucide-react";
 
 function MainNav() {
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  function handleNavigate(event: MouseEvent<HTMLAnchorElement>) {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (isMobile) setOpenMobile(false);
+  }
+
   // We extract the class logic into a function to keep the JSX clean.
   // Using arbitrary variants `[&>svg]:` to target nested SVG icons just like styled-components.
   const navLinkClasses = ({ isActive }) =>
@@ -20,31 +29,31 @@ function MainNav() {
     <nav aria-label="Main navigation">
       <ul className="flex flex-col gap-2">
         <li>
-          <NavLink to="/dashboard" className={navLinkClasses}>
+          <NavLink to="/dashboard" className={navLinkClasses} onClick={handleNavigate}>
             <Home />
             <span>Home</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/bookings" className={navLinkClasses}>
+          <NavLink to="/bookings" className={navLinkClasses} onClick={handleNavigate}>
             <CalendarDays />
             <span>Booking</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/cabins" className={navLinkClasses}>
+          <NavLink to="/cabins" className={navLinkClasses} onClick={handleNavigate}>
             <Tent />
             <span>Cabins</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/users" className={navLinkClasses}>
+          <NavLink to="/users" className={navLinkClasses} onClick={handleNavigate}>
             <Users />
             <span>Users</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/settings" className={navLinkClasses}>
+          <NavLink to="/settings" className={navLinkClasses} onClick={handleNavigate}>
             <Settings />
             <span>Settings</span>
           </NavLink>
